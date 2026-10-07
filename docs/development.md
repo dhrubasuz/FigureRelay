@@ -10,7 +10,7 @@ Start the installed backend with `python -m figurerelay` from the repository roo
 
 Run `pnpm --dir frontend dev` in another terminal to use Vite's development server. For the interface served directly by FastAPI, rebuild with `pnpm --dir frontend build`.
 
-Set `FIGURERELAY_DATA_DIR` when you want a separate scratch database and generated bundles. Do not use real reporting data in screenshots, tests, or committed fixtures.
+Application data defaults to the current user's application-data directory; see [storage locations](architecture.md#storage-and-operation). Set `FIGURERELAY_DATA_DIR` when you want a separate scratch database and generated bundles. This explicit setting overrides the platform default. Do not use real reporting data in screenshots, tests, or committed fixtures.
 
 ## Checks
 

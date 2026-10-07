@@ -48,7 +48,15 @@ Local actor names help describe actions, but are not authenticated identities. T
 
 ## Storage and operation
 
-`FIGURERELAY_DATA_DIR` can select a local data directory. Use a path appropriate for the imported information, and keep it outside source control. The process owner has access to that storage and its exported artifacts. The default loopback binding is part of the prototype's operating model.
+Application data defaults to a directory for the current user, so a normal package installation does not need write access to its installation directory:
+
+| Platform | Default data directory |
+| --- | --- |
+| Windows | `%LOCALAPPDATA%/FigureRelay`, falling back to `~/AppData/Local/FigureRelay` when that environment variable is unavailable. |
+| macOS | `~/Library/Application Support/FigureRelay` |
+| Linux | `$XDG_DATA_HOME/FigureRelay` when `XDG_DATA_HOME` is an absolute path; otherwise `~/.local/share/FigureRelay`. |
+
+`FIGURERELAY_DATA_DIR` overrides this default. An explicit `data_dir` passed to the application factory also takes precedence over the default. Use a path appropriate for the imported information, and keep it outside source control. The process owner has access to that storage and its exported artifacts. The default loopback binding is part of the prototype's operating model.
 
 The repository includes a Dockerfile and Compose configuration, but their container build/run path has not been verified in this session. The prototype demonstration uses the local Python/Node setup.
 
