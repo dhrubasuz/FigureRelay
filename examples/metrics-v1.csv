@@ -1,0 +1,4 @@
+key,label,value,kind,unit,period
+revenue,Revenue,12400000,number,USD,2026 Q3
+margin,Operating margin,0.245,number,percent,2026 Q3
+customers,Active customers,1840,number,count,2026 Q3
