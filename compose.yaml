@@ -1,0 +1,14 @@
+# Copyright 2026 Dhruba Poudel
+# SPDX-License-Identifier: Apache-2.0
+services:
+  figurerelay:
+    build: .
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - reporting-data:/data
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+volumes:
+  reporting-data:

@@ -1,0 +1,39 @@
+# Local Python environments and generated files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+build/
+
+# Frontend dependencies and builds
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+coverage/
+
+# Local configuration, imported business data, and persistent application state
+.env
+.env.*
+!.env.example
+data/
+.figurerelay/
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+
+# Office lock files and machine-specific editor state
+~$*
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
