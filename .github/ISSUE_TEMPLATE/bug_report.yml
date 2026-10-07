@@ -1,0 +1,43 @@
+name: Bug report
+description: Report a reproducible problem using a safe, minimal example.
+title: '[Bug] '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include confidential reports, credentials, or customer data. Use synthetic examples.
+        For vulnerabilities or sensitive exploit details, follow SECURITY.md instead of opening a public report.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Include the revision you used.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: Operating system, Python, Node.js, browser
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include a minimal synthetic example when useful.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: Redact sensitive details from error messages or screenshots.
+    validations:
+      required: true

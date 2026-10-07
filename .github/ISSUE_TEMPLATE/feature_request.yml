@@ -1,0 +1,23 @@
+name: Feature request
+description: Explain a reporting problem and the workflow it affects.
+title: '[Feature] '
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Who encounters this problem and how do they handle it today?
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Proposed workflow
+      description: Describe the desired behaviour, using synthetic data if examples help.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and tradeoffs
+      description: Include simpler approaches you considered.
