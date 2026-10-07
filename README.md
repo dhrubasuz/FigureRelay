@@ -1,5 +1,7 @@
 # FigureRelay
 
+[![Checks](https://github.com/dhrubasuz/FigureRelay/actions/workflows/ci.yml/badge.svg)](https://github.com/dhrubasuz/FigureRelay/actions/workflows/ci.yml)
+
 **Keep the same figure consistent across your report and slides.**
 
 FigureRelay is a local prototype for importing a set of named metrics, linking those metrics into report and slide templates, reviewing every occurrence, and approving a frozen publication bundle. Change a source value once, then review its effect everywhere it appears.
@@ -50,7 +52,7 @@ Open [http://127.0.0.1:8080](http://127.0.0.1:8080). The server listens on the l
 
 For frontend development, start the backend and run `pnpm --dir frontend dev` in a second terminal. See [development](docs/development.md) for checks and workflow details.
 
-A [Dockerfile](Dockerfile) and [Compose configuration](compose.yaml) are also supplied. Their container build and run path have not been verified in this session.
+A [Dockerfile](Dockerfile) and [Compose configuration](compose.yaml) are also supplied. The container build and run path has not yet been verified on a Docker host.
 
 ## Try the workflow
 
