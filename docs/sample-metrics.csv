@@ -1,0 +1,9 @@
+key,label,value,kind,unit,period
+revenue,Total revenue,1250000,number,AUD,FY2026
+margin,Operating margin,0.245,number,percent,FY2026
+customers,Active customers,1840,number,count,FY2026
+period,Reporting period,FY2026,text,,FY2026
+operating.costs,Operating costs,910000,number,AUD,FY2026
+headcount,Team members,42,number,people,FY2026
+report.date,Report date,2026-10-07,date,,FY2026
+organisation,Organisation,Example organisation,text,,FY2026
