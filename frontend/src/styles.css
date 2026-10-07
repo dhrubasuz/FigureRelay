@@ -258,6 +258,8 @@ td code { font-size: 10px; padding: 4px 6px; border: 1px solid #e1e8da; border-r
 .history-event-title h3 { color: #667e50; font-size: 12px; font-weight: 550; }
 .history-event-title time { color: #99a38b; font-size: 9px; white-space: nowrap; }
 .history-event-main p { color: #93a080; font-size: 10px; line-height: 1.8; }
+.history-export { margin-top: 12px; max-width: 100%; white-space: normal; text-align: center; }
+.history-export svg { flex-shrink: 0; }
 .event-details { margin-top: 10px; font-size: 10px; color: #8fa178; }
 .event-details summary { cursor: pointer; }
 .event-details pre { font-size: 10px; white-space: pre-wrap; overflow-wrap: anywhere; color: #83956b; padding: 15px; border-radius: 4px; background: #f6f8ee; }

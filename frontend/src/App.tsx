@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { api, ApiError, formatDate, formatMetric, listProjects } from './api';
+import { api, ApiError, formatDate, formatMetric, generationExportUrl, listProjects } from './api';
 import type { Generation, HistoryEntry, Project, ProjectSummary, Template, TextBlock } from './api';
 import { Badge, Brand, EmptyPanel, GenerationMeta, Icon, ReportPaper, SlideCards } from './components';
 import type { IconName } from './components';
 import { copyTemplate, isTemplateDirty } from './template';
+import { approvedHistoryGeneration, historyGenerationId } from './history';
 
 type Tab = 'sources' | 'report' | 'slides' | 'review' | 'history';
 const tabs: { id: Tab; label: string; caption: string; icon: IconName }[] = [
@@ -46,7 +47,7 @@ export default function App() {
   const [projectName, setProjectName] = useState('');
   const [actor, setActor] = useState('Dhruba Poudel');
   const [acknowledged, setAcknowledged] = useState(false);
-  const [exportRequest, setExportRequest] = useState<{ projectId: string; previousEntryIds: string[] } | null>(null);
+  const [exportRequest, setExportRequest] = useState<{ projectId: string; generationId: string; previousEntryIds: string[] } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const newProjectInput = useRef<HTMLInputElement>(null);
 
@@ -86,18 +87,19 @@ export default function App() {
 
   useEffect(() => {
     if (!exportRequest || exportRequest.projectId !== projectId) return;
+    const request = exportRequest;
     const controller = new AbortController();
     let attempts = 0;
     let timer: number;
     async function refreshExportHistory() {
       attempts += 1;
       try {
-        const next = await api<Project>(`/projects/${encodeURIComponent(exportRequest!.projectId)}`, { signal: controller.signal });
+        const next = await api<Project>(`/projects/${encodeURIComponent(request.projectId)}`, { signal: controller.signal });
         if (controller.signal.aborted) return;
         // A native download is owned by the browser. Refresh only server history;
         // never infer that its bytes reached the user's Downloads folder.
         setProject(current => current?.id === next.id ? { ...current, history: next.history } : current);
-        const recorded = next.history.some(entry => entry.event === 'generation.exported' && entry.id && !exportRequest!.previousEntryIds.includes(entry.id));
+        const recorded = next.history.some(entry => entry.event === 'generation.exported' && historyGenerationId(entry) === request.generationId && entry.id && !request.previousEntryIds.includes(entry.id));
         if (!recorded && attempts < 5) timer = window.setTimeout(refreshExportHistory, 500);
       } catch (failure) {
         if (!controller.signal.aborted) {
@@ -241,11 +243,11 @@ export default function App() {
     });
   }
 
-  function requestExport() {
-    if (!project || !published) return;
+  function requestExport(generationId: string, revision: number | null) {
+    if (!project) return;
     setError('');
-    setNotice('Export requested. Your browser handles the download. Office files are static snapshots.');
-    setExportRequest({ projectId: project.id, previousEntryIds: project.history.flatMap(entry => entry.id ? [entry.id] : []) });
+    setNotice(`Export requested${revision !== null ? ` for approved revision ${revision}` : ' for the approved generation'}. Your browser handles the download. Office files are static snapshots.`);
+    setExportRequest({ projectId: project.id, generationId, previousEntryIds: project.history.flatMap(entry => entry.id ? [entry.id] : []) });
   }
 
   async function reload() {
@@ -305,7 +307,7 @@ export default function App() {
     <main className="main" id="main-content">
       <header className="topbar"><div className="breadcrumb">Workspace <Icon name="chevron" size={13}/><span>{project?.name ?? 'Getting started'}</span></div><div className="topbar-end"><span className="prototype-label">LOCAL-FIRST PROTOTYPE</span><button className="icon-button" onClick={() => setCreateOpen(current => !current)} disabled={disabled} title="Create a project" aria-label="Create a project"><Icon name="plus" size={18}/></button><button className="icon-button" onClick={reload} disabled={disabled} title="Reload saved project; resets unsaved template edits" aria-label="Reload saved project; resets unsaved template edits"><Icon name="refresh" size={18}/></button></div></header>
       <div className="content">
-        <div className="page-heading"><div><div className="eyebrow">YOUR WORKSPACE, CONNECTED</div><h1>{activeTab.label}</h1><p>{activeTab.caption}</p></div><div className="page-actions">{project ? <>{published && !disabled ? <a className="button button-outline" href={`/api${projectPath}/generations/${encodeURIComponent(published.id)}/export`} download onClick={requestExport}><Icon name="download" size={17}/>Export ZIP</a> : <button className="button button-outline" disabled><Icon name="download" size={17}/>Export ZIP</button>}<button className="button button-primary" onClick={generatePreview} disabled={disabled || project.metrics.length === 0}><Icon name="review" size={17}/>{dirty ? 'Save & preview' : 'Generate preview'}</button></> : <button className="button button-primary" onClick={loadDemo} disabled={disabled}><Icon name="spark" size={17}/>Explore the demo</button>}</div></div>
+        <div className="page-heading"><div><div className="eyebrow">YOUR WORKSPACE, CONNECTED</div><h1>{activeTab.label}</h1><p>{activeTab.caption}</p></div><div className="page-actions">{project ? <>{published && !disabled ? <a className="button button-outline" href={generationExportUrl(project.id, published.id)} download onClick={() => requestExport(published.id, published.revision)}><Icon name="download" size={17}/>Export ZIP</a> : <button className="button button-outline" disabled><Icon name="download" size={17}/>Export ZIP</button>}<button className="button button-primary" onClick={generatePreview} disabled={disabled || project.metrics.length === 0}><Icon name="review" size={17}/>{dirty ? 'Save & preview' : 'Generate preview'}</button></> : <button className="button button-primary" onClick={loadDemo} disabled={disabled}><Icon name="spark" size={17}/>Explore the demo</button>}</div></div>
 
         <div className="live-status" aria-live="polite" aria-atomic="true">{busy ? <div className="message message-loading"><span className="spinner"/>{busy}…</div> : null}{notice ? <div className="message message-success"><Icon name="check" size={18}/><span>{notice}</span><button onClick={() => setNotice('')} aria-label="Dismiss notification"><Icon name="close" size={15}/></button></div> : null}</div>
         {error ? <div className="message message-error" role="alert"><Icon name="close" size={18}/><span>{error}</span><button onClick={() => setError('')} aria-label="Dismiss error"><Icon name="close" size={15}/></button></div> : null}
@@ -343,7 +345,21 @@ export default function App() {
           </> : null}
 
           {tab === 'history' ? <>
-            <section className="history-intro"><div><div className="eyebrow">DECISIONS, IN CONTEXT</div><h2>Follow the work back to its source.</h2><p>Project events record imports, saved templates, previews and publication decisions. This is a local activity history, not an authenticated or tamper-proof audit.</p></div>{published ? <div className="history-published"><span className="status-dot status-online"/><span>Current published generation<strong>{published.id}</strong></span></div> : null}</section><section className="panel history-panel"><div className="panel-header"><h2>Project activity</h2><Badge>{project.history.length} {project.history.length === 1 ? 'event' : 'events'}</Badge></div>{project.history.length > 0 ? <ol className="history-list">{project.history.map((entry, index) => <li key={entry.id ?? `${entry.event}-${index}`}><div className={`history-event-icon ${entry.event === 'generation.approved' ? 'history-approved' : ''}`}><Icon name={entry.event === 'generation.approved' ? 'check' : entry.event === 'source.imported' ? 'upload' : entry.event === 'template.updated' ? 'report' : 'history'} size={18}/></div><div className="history-event-main"><div className="history-event-title"><h3>{historyTitle(entry)}</h3><time dateTime={entry.created_at ?? entry.timestamp}>{formatDate(entry.created_at ?? entry.timestamp)}</time></div><p>{entry.actor ? `Recorded as ${entry.actor}` : 'Local workspace event'}{entry.revision !== undefined ? ` · Revision ${entry.revision}` : ''}</p>{entry.detail ? <p>{entry.detail}</p> : null}{entry.details ? <details className="event-details"><summary>Event details</summary><pre>{typeof entry.details === 'string' ? entry.details : JSON.stringify(entry.details, null, 2)}</pre></details> : null}</div></li>)}</ol> : <EmptyPanel title="Your history starts with a decision" description="Imports, template edits and generation reviews appear here." icon="history"/>}</section>
+            <section className="history-intro"><div><div className="eyebrow">DECISIONS, IN CONTEXT</div><h2>Follow the work back to its source.</h2><p>Download any previously approved revision from its approval event. Project events also record imports, saved templates and previews. This is a local activity history, not an authenticated or tamper-proof audit.</p></div>{published ? <div className="history-published"><span className="status-dot status-online"/><span>Current published generation<strong>{published.id}</strong></span></div> : null}</section>
+            <section className="panel history-panel"><div className="panel-header"><h2>Project activity</h2><Badge>{project.history.length} {project.history.length === 1 ? 'event' : 'events'}</Badge></div>{project.history.length > 0 ? <ol className="history-list">{project.history.map((entry, index) => {
+              const approved = approvedHistoryGeneration(entry);
+              const exportLabel = approved && approved.revision !== null ? `Export approved revision ${approved.revision} ZIP` : 'Export approved generation ZIP';
+              return <li key={entry.id ?? `${entry.event}-${index}`}>
+                <div className={`history-event-icon ${entry.event === 'generation.approved' ? 'history-approved' : ''}`}><Icon name={entry.event === 'generation.approved' ? 'check' : entry.event === 'source.imported' ? 'upload' : entry.event === 'template.updated' ? 'report' : 'history'} size={18}/></div>
+                <div className="history-event-main">
+                  <div className="history-event-title"><h3>{historyTitle(entry)}</h3><time dateTime={entry.created_at ?? entry.timestamp}>{formatDate(entry.created_at ?? entry.timestamp)}</time></div>
+                  <p>{entry.actor ? `Recorded as ${entry.actor}` : 'Local workspace event'}{entry.revision !== undefined ? ` · Revision ${entry.revision}` : ''}</p>
+                  {entry.detail ? <p>{entry.detail}</p> : null}
+                  {approved ? disabled ? <button className="button button-outline button-small history-export" disabled><Icon name="download" size={15}/>{exportLabel}</button> : <a className="button button-outline button-small history-export" href={generationExportUrl(project.id, approved.id)} download onClick={() => requestExport(approved.id, approved.revision)}><Icon name="download" size={15}/>{exportLabel}</a> : null}
+                  {entry.details ? <details className="event-details"><summary>Event details</summary><pre>{typeof entry.details === 'string' ? entry.details : JSON.stringify(entry.details, null, 2)}</pre></details> : null}
+                </div>
+              </li>;
+            })}</ol> : <EmptyPanel title="Your history starts with a decision" description="Imports, template edits and generation reviews appear here." icon="history"/>}</section>
           </> : null}
         </>}
         <footer className="content-footer"><span><Brand compact/> <span>Connected numbers. Considered changes.</span></span><span>Experimental software · Dhruba Poudel</span></footer>

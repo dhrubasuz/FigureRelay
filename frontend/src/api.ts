@@ -81,6 +81,10 @@ export async function listProjects(signal?: AbortSignal): Promise<ProjectSummary
   return Array.isArray(payload) ? payload : payload.projects;
 }
 
+export function generationExportUrl(projectId: string, generationId: string): string {
+  return `/api/projects/${encodeURIComponent(projectId)}/generations/${encodeURIComponent(generationId)}/export`;
+}
+
 export function formatMetric(metric: Metric): string {
   // Preserve imported decimal precision instead of converting financial values to floating point.
   const raw = String(metric.value);
