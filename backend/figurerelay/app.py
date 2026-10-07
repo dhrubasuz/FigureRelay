@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 
 import os
 from pathlib import Path
+import sys
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
@@ -23,6 +24,21 @@ from .store import AUTHOR, Store, WorkflowError
 MAX_BODY_BYTES = MAX_UPLOAD_BYTES + 64 * 1024
 LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
 DEV_ORIGINS = {"http://localhost:5173", "http://127.0.0.1:5173", "http://[::1]:5173"}
+
+
+def default_data_dir() -> Path:
+    """Choose a writable per-user location, independently of package installation."""
+    if sys.platform == "win32":
+        local_app_data = os.environ.get("LOCALAPPDATA")
+        base = Path(local_app_data) if local_app_data else Path.home() / "AppData" / "Local"
+    elif sys.platform == "darwin":
+        base = Path.home() / "Library" / "Application Support"
+    else:
+        xdg_data_home = os.environ.get("XDG_DATA_HOME")
+        # The XDG specification requires an absolute path. A relative setting must
+        # not turn the current working directory into an accidental data location.
+        base = Path(xdg_data_home) if xdg_data_home and Path(xdg_data_home).is_absolute() else Path.home() / ".local" / "share"
+    return base / "FigureRelay"
 
 
 class RequestLimit:
@@ -59,7 +75,7 @@ class RequestLimit:
 
 def create_app(data_dir=None) -> FastAPI:
     project_root = Path(__file__).resolve().parents[2]
-    directory = data_dir or os.environ.get("FIGURERELAY_DATA_DIR") or project_root / ".figurerelay"
+    directory = data_dir if data_dir is not None else os.environ.get("FIGURERELAY_DATA_DIR") or default_data_dir()
     store = Store(directory)
     app = FastAPI(title="FigureRelay", version=__version__, docs_url="/api/docs", openapi_url="/api/openapi.json", redoc_url=None)
     app.state.store = store
