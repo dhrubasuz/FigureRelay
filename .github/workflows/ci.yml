@@ -32,6 +32,8 @@ jobs:
           python -m pip install -e backend
       - name: Test backend behaviour
         run: python -m pytest backend/tests
+      - name: Verify synthetic Office walkthrough
+        run: python scripts/verify_demo.py --output "${{ runner.temp }}/figurerelay-demo"
 
   frontend:
     name: Frontend checks

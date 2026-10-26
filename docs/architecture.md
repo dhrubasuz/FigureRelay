@@ -60,6 +60,18 @@ Application data defaults to a directory for the current user, so a normal packa
 
 The repository includes a Dockerfile and Compose configuration, but their container build/run path has not been verified in this session. The prototype demonstration uses the local Python/Node setup.
 
+## Code and verification map
+
+| Boundary | Implementation | Evidence to inspect |
+| --- | --- | --- |
+| Import validation and stable keys | `backend/figurerelay/sources.py` | Parser tests cover invalid values, duplicate keys and bounded Excel archives. |
+| Revisions, approvals and stored artifacts | `backend/figurerelay/store.py` | Workflow tests cover stale candidates, concurrent changes, persistence and artifact integrity. |
+| Attributed Office snapshots | `backend/figurerelay/exports.py` | Export tests inspect readable content, authorship, generation identifiers and manifest checksums. |
+| Local HTTP interface | `backend/figurerelay/app.py` | API workflow tests include approval gating and loopback request protection. |
+| Browser review and history | `frontend/src/App.tsx`, `frontend/src/history.ts`, `frontend/src/template.ts` | Frontend tests cover exact-generation history links and saved/unsaved template comparison; type checks and builds are separate checks. |
+
+The [demo walkthrough](demo-walkthrough.md) connects those boundaries in one synthetic two-revision example. Its verification command produces inspectable Office files and a machine-readable result. Passing that command is evidence for its stated API/artifact checks, not a substitute for browser accessibility testing, visual Office review or a deployment security assessment.
+
 ## Extension priorities
 
 Future changes may add source connectors, richer template models, document formats, authenticated collaboration, and stronger provenance. Each must preserve stable metric identity, clear source/template revision relationships, and the frozen approval/export boundary. Discussion belongs in an issue before implementation of a public-contract change.

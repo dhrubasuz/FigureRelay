@@ -65,6 +65,8 @@ A [Dockerfile](Dockerfile) and [Compose configuration](compose.yaml) are also su
 
 The [quick start](docs/quickstart.md) explains the schema and review process. [Architecture](docs/architecture.md) explains the revision boundary.
 
+For a focused portfolio demonstration, follow the [two-revision walkthrough](docs/demo-walkthrough.md). It includes a reproducible API check that generates synthetic Word/PowerPoint bundles, inspects their contents and metadata, and verifies that an older approved ZIP stays unchanged after a source update and application restart.
+
 ## Input format
 
 Provide these six columns, with one metric per row:

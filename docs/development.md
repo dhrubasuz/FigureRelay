@@ -27,6 +27,8 @@ These are commands to perform checks, not a claim that they have already passed.
 
 Useful behavioural checks cover invalid/duplicate metrics, formula-cache handling, unresolved links, repeated occurrences, source changes after candidate generation, exact-revision approval, and export of the original stored bytes. Tests of Office exports should inspect document contents and author metadata, rather than only checking that a ZIP exists.
 
+For inspectable sample artifacts, run `python scripts/verify_demo.py --output .figurerelay/demo-verification` with a new or empty destination. The [walkthrough](demo-walkthrough.md) explains the two-revision scenario and the resulting `verification.json`. CI also runs this API/artifact check against a temporary database; it does not validate browser behaviour or Office layout.
+
 ## Dependencies and licences
 
 Keep `frontend/pnpm-lock.yaml` current and use `pnpm --dir frontend install --frozen-lockfile` for reproducible frontend installs. Backend requirements and project metadata define the Python dependencies. When adding or upgrading a dependency, inspect its licence, provenance, and notices and update [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md). Do not infer a component's licence from its repository description alone.
